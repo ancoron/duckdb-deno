@@ -1,6 +1,7 @@
 #include <math.h>
 #include <duckdb.h>
 #include <string.h>
+#include <stdlib.h>
 
 void duckffi_free(void* ptr) { free(ptr); }
 void duckffi_dfree(void* ptr) { duckdb_free(ptr); }

@@ -169,6 +169,58 @@ connection.close();
 db.close();
 ```
 
+## Development
+
+Since we need the official DuckDB shared library and header file for building
+the FFI bindings, some helper scripts are available to initialize everything and
+compile our own library (in `src/` directory) using the Clang LLVM compiler
+tool.
+
+### Linux
+
+```bash
+./build-linux.sh
+```
+
+...or alternatively:
+
+```bash
+deno task lib-linux
+```
+
+This puts everything needed into directory `bin/`, so that we can use it for
+telling the Deno runtime where to look when trying to find our shared library as
+well as the one from DuckDB.
+
+You can add the newly populated directory to the library search path, so that
+you won't get weird errors later:
+
+```bash
+export LD_LIBRARY_PATH=bin
+```
+
+#### Execute Tests
+
+The best way to verify that your setup is working properly is to run the tests
+as follows:
+
+```bash
+deno task test
+```
+
+If you happen to see an error like this you did not adjust your library search
+path with `LD_LIBRARY_PATH`:
+
+```
+./mod_test.ts (uncaught error)
+error: (in promise) Error: Could not open library: Could not open library: libduckdb-deno.so: cannot open shared object file: No such file or directory
+const { symbols: duck } = Deno.dlopen(get_lib(), {
+                               ^
+    at new DynamicLibrary (ext:deno_ffi/00_ffi.js:454:42)
+    at Object.dlopen (ext:deno_ffi/00_ffi.js:558:10)
+    at file:///home/ancoron/dev/duckdb-deno/lib.js:39:32
+```
+
 ## Credits
 
 Thanks to the original author of `@evan/duckdb`

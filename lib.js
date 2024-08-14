@@ -1,5 +1,3 @@
-import { dlopen } from "jsr:@divy/plug@1.0.3";
-
 function ptr(v) {
   return Deno.UnsafePointer.of(v);
 }
@@ -12,33 +10,33 @@ function getCString(v) {
   return view.getCString();
 }
 
-const name = "duckdb";
 const utf8e = new TextEncoder();
 const GeneratorFunction = (function* () {}).constructor;
 
-const path = {
-  linux() {
-    return new URL(`./bin/libduckdb.so`, import.meta.url);
-  },
-  darwin() {
-    return new URL(`./bin/libduckdb.dylib`, import.meta.url);
-  },
-}[Deno.build.os]().pathname;
+function get_lib() {
+  const path = Deno.env.get("DENO_DUCKDB_LIBPATH");
+  if (path) {
+    return path;
+  }
 
-const devMode = Deno.env.get("DENO_DUCKDB_DEV");
-let options = { name: "duckdb" };
-if (devMode) {
-  options.url = path;
-} else {
-  options.url = "https://github.com/littledivy/duckdb/releases/download/0.1.0/";
-  options.suffixes = {
-    darwin: {
-      aarch64: `_aarch64`,
-    },
-  };
+  const name = Deno.env.get("DENO_DUCKDB_LIBNAME") || "duckdb-deno";
+  let lib_suffix = "";
+  switch (Deno.build.os) {
+    case "windows":
+      lib_suffix = "dll";
+      break;
+    case "darwin":
+      lib_suffix = "dylib";
+      break;
+    default:
+      lib_suffix = "so";
+      break;
+  }
+
+  return `lib${name}.${lib_suffix}`;
 }
 
-const { symbols: duck } = await dlopen(options, {
+const { symbols: duck } = Deno.dlopen(get_lib(), {
   duckffi_free: { parameters: ["pointer"], result: "void" },
   duckffi_dfree: { parameters: ["pointer"], result: "void" },
   duckffi_close: { parameters: ["pointer"], result: "void" },
@@ -709,28 +707,28 @@ const _trm = {
 };
 
 const _trmc = {
-  [_t.enum](n) {
+  [_t.enum](_n) {
     return `(type === 'string')`;
   },
-  [_t.float](n) {
+  [_t.float](_n) {
     return `(type === 'number')`;
   },
-  [_t.double](n) {
+  [_t.double](_n) {
     return `(type === 'number')`;
   },
-  [_t.varchar](n) {
+  [_t.varchar](_n) {
     return `(type === 'string')`;
   },
-  [_t.boolean](n) {
+  [_t.boolean](_n) {
     return `(type === 'boolean')`;
   },
-  [_t.time](n) {
+  [_t.time](_n) {
     return `(type === 'string') || (type === 'number')`;
   },
-  [_t.date](n) {
+  [_t.date](_n) {
     return `(type === 'number') || (type === 'string')`;
   },
-  [_t.timestamp](n) {
+  [_t.timestamp](_n) {
     return `(type === 'number') || (type === 'bigint')`;
   },
   [_t.utinyint](n) {
