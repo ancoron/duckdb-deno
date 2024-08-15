@@ -24,7 +24,7 @@ if [ ! -f "${lib_path}" ]; then
 
     if [ ! -f "${lib_archive}" ]; then
         echo "Downloading DuckDB library version ${duckdb_version} (${host_arch})"
-        wget -O "${lib_archive}" "https://github.com/duckdb/duckdb/releases/download/v${duckdb_version}/libduckdb-linux-${host_arch}.zip"
+        wget -q -O "${lib_archive}" "https://github.com/duckdb/duckdb/releases/download/v${duckdb_version}/libduckdb-linux-${host_arch}.zip"
     fi
 
     unzip -q -d "${lib_dir}" "${lib_archive}"
