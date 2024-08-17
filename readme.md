@@ -229,8 +229,12 @@ that has been reused in this module.
 
 ## License
 
-Modifications are licensed under MIT © [Divy](https://github.com/littledivy)
+Modifications by [Ancoron](https://github.com/ancoron) are licensed under
+Apache-2.0.
 
-Original (bun version):
+Modifications by [Divy](https://github.com/littledivy) are licensed under MIT.
 
-Apache-2.0 © [Evan](https://github.com/evanwashere)
+Original work by [Evan](https://github.com/evanwashere) is licensed under
+Apache-2.0.
+
+`SPDX-License-Identifier: Apache-2.0 AMD MIT`
