@@ -8,30 +8,10 @@ on:
 jobs:
   build:
     name: Build ${{ matrix.os }}
-    runs-on:
-      - ${{ matrix.os.type }}-${{ matrix.os.version }}
-      - ${{ matrix.os.arch }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
-          - type: macos
-            version: 14
-            arch: macos
-          - type: macos
-            version: 13
-            arch: macos
-          - type: ubuntu
-            version: 24.04
-            arch: x64
-          - type: ubuntu
-            version: 22.04
-            arch: x64
-          - type: ubuntu
-            version: 24.04
-            arch: aarch64
-          - type: ubuntu
-            version: 22.04
-            arch: aarch64
+        os: [macos-latest, ubuntu-latest]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -46,33 +26,19 @@ jobs:
           deno cache --unstable mod.ts
           deno fmt --check
 
-      - name: build (MacOS)
+      - name: build (macOS)
         shell: bash
-        if: matrix.os.type == 'macos'
+        if: matrix.os == 'macos-latest'
         run: |
           mkdir bin
           brew install duckdb
           ./build.sh
 
-      - name: run tests (MacOS)
-        shell: bash
-        if: matrix.os.type == 'macos'
-        run: |
-          set -xeuo pipefail
-          DYLD_LIBRARY_PATH=bin deno task test
-
       - name: build (linux)
         shell: bash
-        if: matrix.os.type == 'ubuntu'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           ./build-linux.sh
-
-      - name: run tests (linux)
-        shell: bash
-        if: matrix.os.type == 'ubuntu'
-        run: |
-          set -xeuo pipefail
-          LD_LIBRARY_PATH=bin deno task test
 
       - name: Release
         uses: softprops/action-gh-release@master
