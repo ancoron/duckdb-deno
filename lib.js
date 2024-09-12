@@ -13,30 +13,7 @@ function getCString(v) {
 const utf8e = new TextEncoder();
 const GeneratorFunction = (function* () {}).constructor;
 
-function get_lib() {
-  const path = Deno.env.get("DENO_DUCKDB_LIBPATH");
-  if (path) {
-    return path;
-  }
-
-  const name = Deno.env.get("DENO_DUCKDB_LIBNAME") || "duckdb-deno";
-  let lib_suffix = "";
-  switch (Deno.build.os) {
-    case "windows":
-      lib_suffix = "dll";
-      break;
-    case "darwin":
-      lib_suffix = "dylib";
-      break;
-    default:
-      lib_suffix = "so";
-      break;
-  }
-
-  return `lib${name}.${lib_suffix}`;
-}
-
-const { symbols: duck } = Deno.dlopen(get_lib(), {
+const lib_symbols = {
   duckffi_free: { parameters: ["pointer"], result: "void" },
   duckffi_dfree: { parameters: ["pointer"], result: "void" },
   duckffi_close: { parameters: ["pointer"], result: "void" },
@@ -216,7 +193,62 @@ const { symbols: duck } = Deno.dlopen(get_lib(), {
     parameters: ["pointer", "u64", "u32"],
     result: "u64",
   },
-});
+};
+
+function get_lib() {
+  const path = Deno.env.get("DENO_DUCKDB_LIBPATH");
+  if (path) {
+    return path;
+  }
+
+  const name = Deno.env.get("DENO_DUCKDB_LIBNAME") || "duckdb-deno";
+  let lib_suffix = "";
+  switch (Deno.build.os) {
+    case "windows":
+      lib_suffix = "dll";
+      break;
+    case "darwin":
+      lib_suffix = "dylib";
+      break;
+    default:
+      lib_suffix = "so";
+      break;
+  }
+
+  // try relative...
+  const relative_path = `./bin/lib${name}.${lib_suffix}`;
+  const url = URL.parse(import.meta.resolve(relative_path));
+  if (url.protocol === "file:") {
+    try {
+      if (Deno.statSync(url.pathname)) {
+        // return the full path...
+        return url.pathname;
+      }
+    } catch (_) {
+      // intentional no-op
+    }
+  }
+
+  // rely on other mechanics to resolve the library...
+  return `lib${name}.${lib_suffix}`;
+}
+
+const lib_file = get_lib();
+
+function load(lib_file) {
+  try {
+    return Deno.dlopen(lib_file, lib_symbols);
+  } catch (e) {
+    if (e.message?.startsWith("Could not open library")) {
+      throw new Error(
+        `Library ${lib_file} not found (please check your library search path)`,
+      );
+    }
+    throw e;
+  }
+}
+
+const { symbols: duck } = load(lib_file);
 
 for (const k in duck) duck[k] = duck[k].native || duck[k];
 

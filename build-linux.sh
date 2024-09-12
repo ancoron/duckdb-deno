@@ -4,6 +4,7 @@ set -e
 
 duckdb_version="${DUCKDB_VERSION:-1.0.0}"
 lib_name="${DENO_DUCKDB_LIBNAME:-duckdb-deno}"
+lib_output="bin/lib${lib_name}.so"
 
 host_arch="$(uname -m)"
 [ "${host_arch}" != "x86_64" ] || host_arch="amd64"
@@ -30,12 +31,12 @@ if [ ! -f "${lib_path}" ]; then
     unzip -q -d "${lib_dir}" "${lib_archive}"
 fi
 
-echo "Compiling shared library into: bin/lib${lib_name}.so"
+echo "Compiling shared library into: ${lib_output}"
 clang src/sql.c \
     -O3 -flto \
     -shared \
     -mtune=native \
-    -o "bin/lib${lib_name}.so" \
+    -o "${lib_output}" \
     -lduckdb -I"${lib_dir}"/ -L"${lib_dir}"/
 
 cp "${lib_path}" bin/
