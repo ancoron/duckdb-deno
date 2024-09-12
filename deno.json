@@ -1,6 +1,7 @@
 {
   "name": "@divy/duckdb",
   "version": "0.2.1",
+  "license": "Apache-2.0 AND MIT",
   "exports": "./mod.ts",
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
@@ -10,10 +11,10 @@
     "lib-linux": "./build-linux.sh",
     "check": "deno fmt --check && deno lint && deno check *.ts *.js",
     "format": "deno fmt",
-    "test": "deno test --allow-ffi --allow-env --coverage=.local/cov_profile",
+    "test": "deno test --allow-ffi --allow-env --allow-read --coverage=.local/cov_profile",
     "coverage": "deno coverage .local/cov_profile",
-    "bench": "deno run --allow-ffi --allow-env --allow-sys benches/deno.mjs",
-    "bench-jit": "deno run --allow-ffi --allow-env --allow-sys benches/jit-deno.mjs",
+    "bench": "deno run --allow-ffi --allow-env --allow-sys --allow-read benches/deno.mjs",
+    "bench-jit": "deno run --allow-ffi --allow-env --allow-sys --allow-read benches/jit-deno.mjs",
     "bench-bun": "bun run benches/bun.mjs",
     "bench-bun-jit": "bun run benches/jit-bun.mjs"
   },
@@ -41,5 +42,16 @@
     "bin/",
     ".local/",
     "src/"
-  ]
+  ],
+  "publish": {
+    "include": [
+      "mod.ts",
+      "lib.js",
+      "bin/libduckdb-deno*",
+      "LICENSE*"
+    ],
+    "exclude": [
+      "!bin/"
+    ]
+  }
 }

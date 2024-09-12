@@ -237,4 +237,4 @@ Modifications by [Divy](https://github.com/littledivy) are licensed under MIT.
 Original work by [Evan](https://github.com/evanwashere) is licensed under
 Apache-2.0.
 
-`SPDX-License-Identifier: Apache-2.0 AMD MIT`
+`SPDX-License-Identifier: Apache-2.0 AND MIT`
